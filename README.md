@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/banner.svg" alt="Khayal Mac — kişisel Mac operatörü" width="100%" />
+<img src="docs/banner.png" alt="Khayal Mac — kişisel Mac operatörü" width="100%" />
 
 <br/>
 
