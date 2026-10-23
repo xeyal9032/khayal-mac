@@ -82,6 +82,7 @@ All under `~/.cursor/skills/khayal-mac/scripts/`.
 | Daemons + ⌥Space | `install-daemons.sh` |
 | Workdir | `workdir.sh get` / `set` |
 | Git | `git.sh durum` · `init` · `baglan [url]` · `kaydet` · `gonder` |
+| Doctor / demo / update | `doctor.sh` · `demo.sh` · `update.sh` |
 | Coding rules | [coding.md](coding.md) |
 
 Unknown setting name → `ayar.sh list` then `ayar.sh <key>` or `open -a "System Settings"`.

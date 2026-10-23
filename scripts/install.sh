@@ -21,6 +21,7 @@ fi
 
 ZSH_BLOCK=$'# >>> khayal-mac >>>
 export PATH="$HOME/.local/bin:/Applications/Cursor.app/Contents/Resources/app/bin:$PATH"
+fpath=($HOME/.zsh/completions $fpath)
 setopt NO_NOMATCH
 unalias khayal 2>/dev/null
 unfunction khayal 2>/dev/null
@@ -157,8 +158,11 @@ do_kur() {
   [[ -f "$SRC/SKILL.md" ]] || { khayal_err "SKILL.md yok: $SRC"; exit 1; }
   copy_skill
   chmod +x "$DST/scripts/"* 2>/dev/null || true
-  mkdir -p "$HOME/.khayal/bin" "$HOME/.local/bin"
+  mkdir -p "$HOME/.khayal/bin" "$HOME/.local/bin" "$HOME/.zsh/completions"
   ln -sfn "$DST/scripts/khayal" "$HOME/.local/bin/khayal"
+  if [[ -f "$DST/scripts/completions/_khayal" ]]; then
+    cp "$DST/scripts/completions/_khayal" "$HOME/.zsh/completions/_khayal"
+  fi
   write_rule
   patch_skill_identity
   patch_zshrc

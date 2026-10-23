@@ -38,6 +38,11 @@ khayal ses dinle           # 25 sn ses komutu
 khayal pro kur             # kısayol + arka plan görevleri
 khayal paketle             # başka Mac için zip (Masaüstü)
 khayal kur                 # bu Mac'e ajanı kur (zip'ten sonra)
+khayal doctor              # ajan sağlık taraması
+khayal demo                # wow turu (bozmaz)
+khayal guncelle            # GitHub'dan güncelle
+khayal menu                # komut paleti
+khayal versiyon
 khayal login
 khayal help
 ```

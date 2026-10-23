@@ -1,0 +1,24 @@
+#compdef khayal k _khayal
+
+local -a cmds
+cmds=(
+  'help:tam liste'
+  'durum:pil disk wifi ses'
+  'gunaydin:sabah özeti'
+  'doctor:ajan sağlığı'
+  'demo:wow turu'
+  'menu:komut paleti'
+  'guncelle:GitHubdan güncelle'
+  'paketle:başka Mac için zip'
+  'kur:bu Mac e kur'
+  'kod:çalışma klasörü'
+  'git:durum init baglan kaydet gonder'
+  'yayin:Netlify'
+  'pano:pano geçmişi'
+  'toparla:temizlik planı'
+  'e2e:test paketi'
+  'versiyon:sürüm'
+  'login:Cursor agent login'
+)
+
+_describe -t commands 'khayal' cmds

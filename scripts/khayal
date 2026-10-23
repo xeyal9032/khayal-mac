@@ -73,6 +73,18 @@ run_fast() {
   case "$n" in
     help|yardim|-h|--help|neler|"neler yapabilirsin"|"neler yapabilirim"|"ne yapabilirsin"|"neler yapa biliyorsun"|yetenekler)
       usage; return 0 ;;
+    doctor|doktor|tani|healthcheck)
+      "$SCRIPTS/doctor.sh"; return 0 ;;
+    demo|wow|"demo tur")
+      "$SCRIPTS/demo.sh"; return 0 ;;
+    guncelle|update|"ajan guncelle")
+      "$SCRIPTS/update.sh"; return 0 ;;
+    versiyon|version|-v|--version)
+      print -- "Khayal Mac v$(khayal_version)"; return 0 ;;
+    menu|"?"|komutlar|palette)
+      khayal_menu; return 0 ;;
+    github|repo)
+      open "https://github.com/xeyal9032/khayal-mac"; khayal_ok "GitHub"; return 0 ;;
     durum|status|pil|battery|disk)
       "$SCRIPTS/status.sh"; return 0 ;;
     gunaydin|merhaba|selam|briefing|sabah)
@@ -282,7 +294,7 @@ run_agent() {
   local wrapped="$identity
 Do: $prompt"
 
-  print -- "${KH_DIM}…${KH_RST}"
+  print -- "  ${KH_CY}▸${KH_RST}  ${KH_DIM}çalışıyor · ${model}${KH_RST}"
   local -a args
   args=(-p --force --yolo --trust --sandbox disabled --approve-mcps --output-format text --workspace "$wd" --model "$model")
   if [[ -n "${KHAYAL_CONTINUE:-}" ]]; then
@@ -297,10 +309,12 @@ Do: $prompt"
 run_repl() {
   KHAYAL_CONTINUE=
   khayal_title
+  mkdir -p "$HOME/.khayal"
   clear 2>/dev/null || true
   local line n facts
   facts="$("$SCRIPTS/status.sh" --line 2>/dev/null || true)"
   khayal_banner "$facts"
+  khayal_dim "klasör: $("$SCRIPTS/workdir.sh" get)"
   while true; do
     print -n "  ${KH_MG}${KH_B}khayal${KH_RST} ${KH_CY}›${KH_RST} "
     if ! read -r line; then
@@ -311,6 +325,19 @@ run_repl() {
     line="${line#"${line%%[![:space:]]*}"}"
     line="${line%"${line##*[![:space:]]}"}"
     [[ -z "$line" ]] && continue
+    print -r -- "$line" >> "$HOME/.khayal/repl_history"
+    case "$line" in
+      1) line="durum" ;;
+      2) line="gunaydin" ;;
+      3) line="doctor" ;;
+      4) line="yan yana" ;;
+      5) line="duzenle" ;;
+      6) line="pano" ;;
+      7) line="git durum" ;;
+      8) line="yayin" ;;
+      9) line="demo" ;;
+      0) line="help" ;;
+    esac
     n="$(normalize "$line")"
     case "$n" in
       cikis|exit|quit|q|bye)
@@ -381,6 +408,28 @@ fi
 
 if [[ "$cmd" == "paketle" || "$cmd" == "paket" ]]; then
   exec zsh "$SCRIPTS/install.sh" paketle
+fi
+
+if [[ "$cmd" == "doctor" || "$cmd" == "doktor" ]]; then
+  exec zsh "$SCRIPTS/doctor.sh"
+fi
+
+if [[ "$cmd" == "demo" ]]; then
+  exec zsh "$SCRIPTS/demo.sh"
+fi
+
+if [[ "$cmd" == "guncelle" || "$cmd" == "update" ]]; then
+  exec zsh "$SCRIPTS/update.sh"
+fi
+
+if [[ "$cmd" == "versiyon" || "$cmd" == "version" || "$cmd" == "-v" || "$cmd" == "--version" ]]; then
+  print -- "Khayal Mac v$(khayal_version)"
+  exit 0
+fi
+
+if [[ "$cmd" == "menu" ]]; then
+  khayal_menu
+  exit 0
 fi
 
 if [[ "$cmd" == "model" ]]; then

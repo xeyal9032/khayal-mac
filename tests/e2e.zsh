@@ -65,6 +65,9 @@ print -- ""
 print -- "=== B  CLI / workdir / model ==="
 assert_match "khayal help" "Khayal" "$KHAYAL" help
 assert_match "khayal neler yapabilirsin" "kod" "$KHAYAL" neler yapabilirsin
+assert_match "khayal versiyon" "Khayal Mac v" "$KHAYAL" versiyon
+assert_match "khayal doctor" "doctor" "$KHAYAL" doctor
+assert_match "khayal menu" "komut paleti" "$KHAYAL" menu
 assert_cmd "model get" "$SCRIPTS/model.sh" get
 assert_match "model hizli" "composer-2.5" "$SCRIPTS/model.sh" hizli
 assert_cmd "workdir set tmp" "$SCRIPTS/workdir.sh" set "$TMP"

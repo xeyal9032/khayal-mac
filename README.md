@@ -8,7 +8,8 @@
 [![zsh](https://img.shields.io/badge/CLI-khayal-67e8f9?style=for-the-badge&logo=gnubash&logoColor=0b1220)](https://github.com/xeyal9032/khayal-mac)
 [![Cursor](https://img.shields.io/badge/Cursor-Agent-e879f9?style=for-the-badge)](https://cursor.com)
 [![Release](https://img.shields.io/github/v/release/xeyal9032/khayal-mac?style=for-the-badge&color=22c55e&label=ZIP)](https://github.com/xeyal9032/khayal-mac/releases/latest)
-[![E2E](https://img.shields.io/badge/E2E-70%20PASS-22c55e?style=for-the-badge)](tests/e2e.zsh)
+[![E2E](https://img.shields.io/badge/E2E-passing-22c55e?style=for-the-badge)](tests/e2e.zsh)
+[![Version](https://img.shields.io/badge/version-1.2.0-67e8f9?style=for-the-badge)](VERSION)
 
 **Khayal Mac** — bu MacBook’un kişisel ajanı.  
 Finder, Sistem Ayarları, git, dosya yazma ve Netlify canlı yayın. Konuştuğun dilde cevap verir.
@@ -72,11 +73,11 @@ Pano geçmişi, Telegram/WhatsApp **taslak** (asla göndermez), Spotlight uygula
 </td>
 <td width="33%" valign="top">
 
-### Başka Mac
-Tek komutla zip al, diğer Mac’te tek komutla kur. Skill, zsh, Spotlight ve arka plan görevleri yerleşir.
+### Başka Mac + bakım
+Zip, kurulum, `doctor` taraması, `demo` turu, GitHub’dan `guncelle`. Tab tamamlama.
 
-`khayal paketle`  
-`khayal kur`
+`khayal doctor`  
+`khayal guncelle`
 
 </td>
 </tr>
@@ -161,6 +162,10 @@ Aynı Mac’i yeniden kurmak: `khayal kur`
 | `khayal yayin yap evet` | Netlify production |
 | `khayal paketle` | Başka Mac için zip |
 | `khayal kur` | Bu Mac’e ajanı kur |
+| `khayal doctor` | Ajan sağlık taraması |
+| `khayal demo` | Wow turu (Mac’i bozmaz) |
+| `khayal guncelle` | GitHub’dan güncelle |
+| `khayal menu` | Komut paleti |
 | `khayal e2e` | Test paketi |
 | `khayal help` | Tam liste |
 
