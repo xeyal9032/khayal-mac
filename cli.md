@@ -29,6 +29,11 @@ khayal pano / khayal yapistir 1
 khayal toparla             # plan;  khayal toparla evet
 khayal saglik / sistir
 khayal kod yeniphpfile     # çalışma klasörü + sohbetle kod
+khayal yeni php sitename   # php|html|node|vite|next
+khayal clone <github-url>  # GitHub'dan indir
+khayal paketler            # npm / composer install
+khayal testet              # proje testleri
+khayal onizle              # localhost:8787 ;  khayal onizle durdur
 khayal git durum|init|baglan [url]|kaydet|gonder
 khayal php / lifeos
 khayal docker ps / yayin

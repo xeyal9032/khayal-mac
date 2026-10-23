@@ -103,14 +103,19 @@ EOF
   clone)
     url="${1:-}"
     dest="${2:-}"
-    [[ -n "$url" ]] || { print -- "khayal git clone <url>"; exit 1; }
-    if [[ -n "$dest" ]]; then
-      git clone "$url" "$dest"
-      "$SCRIPT_DIR/workdir.sh" set "$dest"
-    else
-      git clone "$url"
+    [[ -n "$url" ]] || { print -- "khayal clone https://github.com/kullanici/repo.git"; exit 1; }
+    base="${url:t}"
+    base="${base%.git}"
+    [[ -n "$dest" ]] || dest="${KHAYAL_PROJROOT:-$HOME}/$base"
+    if [[ -e "$dest" ]]; then
+      khayal_err "zaten var: $dest"
+      exit 1
     fi
-    khayal_ok "clone tamam"
+    git clone "$url" "$dest"
+    "$SCRIPT_DIR/workdir.sh" set "$dest" >/dev/null
+    khayal_ok "clone: $dest"
+    open -a Cursor "$dest" 2>/dev/null || true
+    khayal_dim "kod: khayal kod $base  ·  paketler: khayal paketler"
     ;;
   *)
     print -- "usage: git.sh durum|init|baglan [url]|kaydet <msg>|gonder|cek|clone <url>" >&2

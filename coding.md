@@ -27,3 +27,17 @@ You are a **coding agent**, not a chat that pastes snippets. When the user asks 
 ```
 
 `khayal kod yeniphpfile` or `khayal cd yeniphpfile` sets it.
+
+## New project
+
+```bash
+khayal yeni php|html|node|vite|next sitename
+khayal clone https://github.com/org/repo.git
+khayal paketler            # npm / composer install
+khayal testet              # proje testleri
+khayal onizle              # http://127.0.0.1:8787
+khayal git baglan          # GitHub repo
+khayal yayin yap evet      # Netlify prod
+```
+
+Creates `$HOME/<name>`, git init, sets workdir, opens Cursor. Then write files in that folder.

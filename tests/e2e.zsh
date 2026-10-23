@@ -173,6 +173,35 @@ else
 fi
 
 print -- ""
+print -- "=== E2  yeni proje ==="
+export KHAYAL_PROJROOT="$TMP"
+assert_cmd "yeni php e2eapp" "$SCRIPTS/yeni.sh" php e2eapp --sessiz
+if [[ -f "$TMP/e2eapp/index.php" && -f "$TMP/e2eapp/netlify.toml" && -d "$TMP/e2eapp/.git" ]]; then
+  ok "yeni php files + git"
+else
+  bad "yeni php files" "$(ls -la "$TMP/e2eapp" 2>&1 | tr '\n' ' ')"
+fi
+if command -v php >/dev/null 2>&1 && php -l "$TMP/e2eapp/index.php" >/dev/null 2>&1; then
+  ok "yeni php lint"
+else
+  skip "yeni php lint" "php yok"
+fi
+assert_cmd "yeni html e2eweb" "$SCRIPTS/yeni.sh" html e2eweb --sessiz
+[[ -f "$TMP/e2eweb/index.html" ]] && ok "yeni html" || bad "yeni html"
+assert_cmd "yeni vite e2evite" "$SCRIPTS/yeni.sh" vite e2evite --sessiz
+[[ -f "$TMP/e2evite/vite.config.js" && -f "$TMP/e2evite/src/main.js" ]] && ok "yeni vite" || bad "yeni vite"
+assert_cmd "yeni next e2enext" "$SCRIPTS/yeni.sh" next e2enext --sessiz
+[[ -f "$TMP/e2enext/app/page.js" && -f "$TMP/e2enext/package.json" ]] && ok "yeni next" || bad "yeni next"
+if command -v node >/dev/null 2>&1; then
+  print -r -- "$TMP/e2evite" > "$HOME/.khayal/workdir"
+  assert_cmd "testet vite" "$SCRIPTS/testet.sh"
+  print -r -- "$HOME/yeniphpfile" > "$HOME/.khayal/workdir"
+else
+  skip "testet vite" "node yok"
+fi
+unset KHAYAL_PROJROOT
+
+print -- ""
 print -- "=== F  pano ==="
 export KHAYAL_CLIPBOARD="$TMP/clip.log"
 export KHAYAL_CLIPLAST="$TMP/clip.last"

@@ -43,12 +43,13 @@ if [[ "$batt_n" == <-> ]]; then
   fi
 fi
 
-print -- ""
 print -- "  ${KH_CY}${KH_B}durum${KH_RST}  ${KH_DIM}${host} · macOS ${osver}${KH_RST}"
 khayal_hr
 print -- "  ${KH_YL}Pil${KH_RST}     ${batt_col}$(khayal_bar "${batt_n:-0}" 14)${KH_RST}  ${batt_pct:-?}  ${KH_DIM}${batt_src}${KH_RST}"
 print -- "  ${KH_YL}Disk${KH_RST}    ${KH_BL}$(khayal_bar "${disk_n:-0}" 14)${KH_RST}  ${disk_avail:-?} boş  ${KH_DIM}${disk_usedp:-?}${KH_RST}"
 print -- "  ${KH_YL}Ağ${KH_RST}      ${ip}"
-print -- "  ${KH_YL}Ses${KH_RST}     ${vol}%  ${KH_DIM}sessiz=${muted}${KH_RST}"
+ses_lbl="açık"
+if [[ "$muted" == "true" ]]; then ses_lbl="sessiz"; fi
+print -- "  ${KH_YL}Ses${KH_RST}     ${vol}%  ${KH_DIM}${ses_lbl}${KH_RST}"
 print -- "  ${KH_YL}Önde${KH_RST}    ${front}"
 print -- ""

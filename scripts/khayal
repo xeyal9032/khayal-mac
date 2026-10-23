@@ -85,6 +85,28 @@ run_fast() {
       khayal_menu; return 0 ;;
     github|repo)
       open "https://github.com/xeyal9032/khayal-mac"; khayal_ok "GitHub"; return 0 ;;
+    yeni|olustur|"yeni proje")
+      "$SCRIPTS/yeni.sh"; return 0 ;;
+    yeni*|olustur*)
+      "$SCRIPTS/yeni.sh" "${(z)raw}"; return 0 ;;
+    onizle|preview|serve|"yerel ac")
+      "$SCRIPTS/onizle.sh"; return 0 ;;
+    "onizle durdur"|preview-stop)
+      "$SCRIPTS/onizle.sh" durdur; return 0 ;;
+    testet|sinav|"proje test")
+      "$SCRIPTS/testet.sh"; return 0 ;;
+    paketler|bagimlilik|"npm install"|npm|composer)
+      "$SCRIPTS/bagimlilik.sh"; return 0 ;;
+    clone|"git clone")
+      "$SCRIPTS/git.sh" clone; return 0 ;;
+    clone*)
+      "$SCRIPTS/git.sh" "${(z)raw}"; return 0 ;;
+    bak|goster|"kod goster")
+      "$SCRIPTS/goster.sh" son; return 0 ;;
+    bak*|oku*)
+      "$SCRIPTS/goster.sh" bak "${(z)raw#bak }"; return 0 ;;
+    diff|"git diff")
+      "$SCRIPTS/goster.sh" diff; return 0 ;;
     durum|status|pil|battery|disk)
       "$SCRIPTS/status.sh"; return 0 ;;
     gunaydin|merhaba|selam|briefing|sabah)
@@ -281,11 +303,11 @@ run_agent() {
   print -- "${KH_DIM}klasör: $wd  ·  $model${KH_RST}"
 
   local identity
-  identity="Khayal Mac. WD=$wd. Match user language. Act now: write files, run commands. No plan, no recap, no extra questions if the ask is clear. Never git config / force-push / send chat apps. Git: $SCRIPTS/git.sh  Live: $SCRIPTS/docker-netlify.sh yap evet"
+  identity="Khayal Mac. WD=$wd. Match user language. Act now: write files, run commands. No plan, no recap, no extra questions if the ask is clear. After writing files, quote the main changed code in a fenced block. Never git config / force-push / send chat apps. Git: $SCRIPTS/git.sh  Live: $SCRIPTS/docker-netlify.sh yap evet"
 
   if [[ "$interactive" == "1" ]]; then
-    khayal_title
     khayal_banner "$("$SCRIPTS/status.sh" --line 2>/dev/null || true)"
+    khayal_title
     exec "$agent_bin" --force --yolo --trust --sandbox disabled --approve-mcps \
       --workspace "$wd" --model "$model" \
       "$identity Short ready. Wait."
@@ -295,12 +317,15 @@ run_agent() {
 Do: $prompt"
 
   print -- "  ${KH_CY}▸${KH_RST}  ${KH_DIM}çalışıyor · ${model}${KH_RST}"
+  mkdir -p "$HOME/.khayal"
+  touch "$HOME/.khayal/agent-tick"
   local -a args
   args=(-p --force --yolo --trust --sandbox disabled --approve-mcps --output-format text --workspace "$wd" --model "$model")
   if [[ -n "${KHAYAL_CONTINUE:-}" ]]; then
     args+=(--continue)
   fi
   "$agent_bin" "${args[@]}" "$wrapped"
+  "$SCRIPTS/goster.sh" son || true
   if [[ -z "${KHAYAL_SILENT_NOTIFY:-}" ]]; then
     "$SCRIPTS/notify.sh" "Khayal" "Bitti" >/dev/null 2>&1 || true
   fi
@@ -308,12 +333,12 @@ Do: $prompt"
 
 run_repl() {
   KHAYAL_CONTINUE=
-  khayal_title
   mkdir -p "$HOME/.khayal"
   clear 2>/dev/null || true
   local line n facts
   facts="$("$SCRIPTS/status.sh" --line 2>/dev/null || true)"
   khayal_banner "$facts"
+  khayal_title
   khayal_dim "klasör: $("$SCRIPTS/workdir.sh" get)"
   while true; do
     print -n "  ${KH_MG}${KH_B}khayal${KH_RST} ${KH_CY}›${KH_RST} "
@@ -326,18 +351,10 @@ run_repl() {
     line="${line%"${line##*[![:space:]]}"}"
     [[ -z "$line" ]] && continue
     print -r -- "$line" >> "$HOME/.khayal/repl_history"
-    case "$line" in
-      1) line="durum" ;;
-      2) line="gunaydin" ;;
-      3) line="doctor" ;;
-      4) line="yan yana" ;;
-      5) line="duzenle" ;;
-      6) line="pano" ;;
-      7) line="git durum" ;;
-      8) line="yayin" ;;
-      9) line="demo" ;;
-      0) line="help" ;;
-    esac
+    if [[ "$line" == <-> ]]; then
+      mapped="$(khayal_menu_lookup "$line")"
+      [[ -n "$mapped" ]] && line="$mapped"
+    fi
     n="$(normalize "$line")"
     case "$n" in
       cikis|exit|quit|q|bye)
@@ -430,6 +447,40 @@ fi
 if [[ "$cmd" == "menu" ]]; then
   khayal_menu
   exit 0
+fi
+
+if [[ "$cmd" == "yeni" || "$cmd" == "olustur" ]]; then
+  shift
+  exec zsh "$SCRIPTS/yeni.sh" "$@"
+fi
+
+if [[ "$cmd" == "onizle" || "$cmd" == "preview" ]]; then
+  exec zsh "$SCRIPTS/onizle.sh" "${2:-}"
+fi
+
+if [[ "$cmd" == "testet" || "$cmd" == "sinav" ]]; then
+  exec zsh "$SCRIPTS/testet.sh"
+fi
+
+if [[ "$cmd" == "paketler" || "$cmd" == "bagimlilik" ]]; then
+  exec zsh "$SCRIPTS/bagimlilik.sh"
+fi
+
+if [[ "$cmd" == "clone" ]]; then
+  shift
+  exec zsh "$SCRIPTS/git.sh" clone "$@"
+fi
+
+if [[ "$cmd" == "bak" || "$cmd" == "goster" ]]; then
+  if [[ -n "${2:-}" ]]; then
+    exec zsh "$SCRIPTS/goster.sh" bak "$2"
+  else
+    exec zsh "$SCRIPTS/goster.sh" son
+  fi
+fi
+
+if [[ "$cmd" == "diff" ]]; then
+  exec zsh "$SCRIPTS/goster.sh" diff
 fi
 
 if [[ "$cmd" == "model" ]]; then

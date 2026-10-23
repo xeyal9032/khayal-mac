@@ -8,16 +8,16 @@ okn=0
 badn=0
 warnn=0
 
+pretty() { print -r -- "${1/#$HOME/~}"; }
 row_ok()   { okn=$((okn+1));   print -- "  ${KH_GN}✔${KH_RST}  ${(r:18:: :)1} ${KH_DIM}$2${KH_RST}"; }
 row_bad()  { badn=$((badn+1)); print -- "  ${KH_RD}✖${KH_RST}  ${(r:18:: :)1} ${KH_RD}$2${KH_RST}"; }
 row_warn() { warnn=$((warnn+1)); print -- "  ${KH_YL}●${KH_RST}  ${(r:18:: :)1} ${KH_YL}$2${KH_RST}"; }
 
-print -- ""
 print -- "  ${KH_CY}${KH_B}doctor${KH_RST}  ${KH_DIM}v$(khayal_version) · $(scutil --get ComputerName 2>/dev/null || print -- Mac)${KH_RST}"
 khayal_hr
 
 if [[ -x "$ROOT/scripts/khayal" ]]; then
-  row_ok "CLI" "$ROOT/scripts/khayal"
+  row_ok "CLI" "$(pretty "$ROOT/scripts/khayal")"
 else
   row_bad "CLI" "khayal binary yok"
 fi
@@ -29,7 +29,7 @@ else
 fi
 
 if [[ -x "$HOME/.local/bin/agent" ]] || command -v agent >/dev/null 2>&1; then
-  row_ok "agent" "$(command -v agent 2>/dev/null || print -- "$HOME/.local/bin/agent")"
+  row_ok "agent" "$(pretty "$(command -v agent 2>/dev/null || print -- "$HOME/.local/bin/agent")")"
 else
   row_warn "agent" "curl https://cursor.com/install -fsS | bash"
 fi
@@ -54,8 +54,13 @@ else
   row_warn "netlify" "khayal yayin login"
 fi
 
-if launchctl list 2>/dev/null | grep -q 'com.khayal'; then
-  row_ok "daemons" "$(launchctl list 2>/dev/null | grep -c 'com.khayal' | tr -d ' ') görev"
+dcount="$(launchctl list 2>/dev/null | grep -c 'com.khayal' || true)"
+if [[ -z "$dcount" || "$dcount" == "0" ]]; then
+  set -- "$HOME/Library/LaunchAgents"/com.khayal*.plist(N)
+  dcount="$#"
+fi
+if (( dcount > 0 )); then
+  row_ok "daemons" "$dcount görev"
 else
   row_warn "daemons" "khayal pro kur"
 fi
@@ -67,7 +72,7 @@ else
 fi
 
 if [[ -x "$HOME/.khayal/bin/khayal-hotkey" ]]; then
-  row_ok "kısayol" "⌥Space"
+  row_ok "kısayol" "Option+Space"
 else
   row_warn "kısayol" "khayal pro kur"
 fi

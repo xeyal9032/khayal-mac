@@ -44,7 +44,8 @@ khayal_key() { print -- "  ${KH_CY}${(r:22:: :)1}${KH_RST} ${KH_DIM}$2${KH_RST}"
 khayal_warn() { print -- "  ${KH_YL}●${KH_RST}  $*"; }
 
 khayal_title() {
-  printf '\033]0;Khayal v%s — Mac ajanı\007' "$(khayal_version)"
+  [[ -e /dev/tty ]] || return 0
+  printf '\033]0;Khayal v%s\007' "$(khayal_version)" >/dev/tty 2>/dev/null || true
 }
 
 khayal_bar() {
@@ -72,44 +73,125 @@ khayal_chime() {
   afplay /System/Library/Sounds/Tink.aiff >/dev/null 2>&1 &
 }
 
+khayal_vislen() {
+  local s
+  s="$(print -r -- "$1" | sed $'s/\x1b\\[[0-9;]*m//g')"
+  print -r -- ${#s}
+}
+
+khayal_box_line() {
+  local body="$1"
+  local vis pad inner=50 spacer=""
+  vis="$(print -r -- "$body" | sed $'s/\x1b\\[[0-9;]*m//g')"
+  pad=$(( inner - ${#vis} ))
+  if (( pad < 0 )); then pad=0; fi
+  spacer="$(printf '%*s' "$pad" '')"
+  print -- "  ${KH_MG}│${KH_RST}${body}${spacer}${KH_MG}│${KH_RST}"
+}
+
 khayal_banner() {
-  local hello facts ver
+  local hello facts ver bar
   hello="$(khayal_hello)"
   facts="${1:-}"
   ver="$(khayal_version)"
-  print -- ""
-  print -- "  ${KH_MG}╭──────────────────────────────────────────────────╮${KH_RST}"
-  print -- "  ${KH_MG}│${KH_RST}  ${KH_CY}${KH_B}KHAYAL${KH_RST}  ${KH_DIM}macOS operator${KH_RST}                 ${KH_YL}v${ver}${KH_RST}  ${KH_MG}│${KH_RST}"
-  print -- "  ${KH_MG}│${KH_RST}  ${KH_WH}${hello}${KH_RST} ${KH_B}Khayal${KH_RST}                                   ${KH_MG}│${KH_RST}"
+  bar="$(printf '%.0s─' {1..50})"
+  print -- "  ${KH_MG}╭${bar}╮${KH_RST}"
+  khayal_box_line "  ${KH_CY}${KH_B}KHAYAL${KH_RST}  ${KH_DIM}macOS operator${KH_RST}                 ${KH_YL}v${ver}${KH_RST}"
+  khayal_box_line "  ${KH_WH}${hello}${KH_RST} ${KH_B}Khayal${KH_RST}"
   if [[ -n "$facts" ]]; then
-    print -- "  ${KH_MG}│${KH_RST}  ${KH_BL}${facts}${KH_RST}"
+    khayal_box_line "  ${KH_BL}${facts}${KH_RST}"
   fi
-  print -- "  ${KH_MG}╰──────────────────────────────────────────────────╯${KH_RST}"
+  print -- "  ${KH_MG}╰${bar}╯${KH_RST}"
   print -- "  ${KH_DIM}menu  ·  doctor  ·  help  ·  cikis${KH_RST}"
-  print -- ""
 }
 
 khayal_greet_line() {
   print -- "${KH_MG}◆${KH_RST} ${KH_CY}${KH_B}Khayal${KH_RST} ${KH_DIM}v$(khayal_version) hazır${KH_RST}  ${KH_DIM}·${KH_RST}  ${KH_YL}khayal${KH_RST} ${KH_DIM}yaz${KH_RST}"
 }
 
+khayal_menu_init() {
+  [[ -n "${KHAYAL_MENU_READY:-}" ]] && return 0
+  typeset -gA KHAYAL_MENU_CMD KHAYAL_MENU_DESC
+  typeset -ga KHAYAL_MENU_ORDER
+  khayal_menu_add() {
+    KHAYAL_MENU_CMD[$1]="$2"
+    KHAYAL_MENU_DESC[$1]="$3"
+    KHAYAL_MENU_ORDER+=("$1")
+  }
+  khayal_menu_add 1  "durum"                 "pil · disk · ağ · ses"
+  khayal_menu_add 2  "gunaydin"              "takvim + hava + pil"
+  khayal_menu_add 3  "yarin"                 "yarın özeti"
+  khayal_menu_add 4  "yan yana"              "Chrome sol · Cursor sağ"
+  khayal_menu_add 5  "duzenle"               "Downloads klasörle"
+  khayal_menu_add 6  "finder"                "Finder aç"
+  khayal_menu_add 7  "chrome"                "Google Chrome"
+  khayal_menu_add 8  "karanlik"              "karanlık mod"
+  khayal_menu_add 9  "aydinlik"              "aydınlık mod"
+  khayal_menu_add 10 "ss"                    "ekran görüntüsü"
+  khayal_menu_add 11 "ss pdf"                "ekran → PDF"
+  khayal_menu_add 12 "kilitle"               "ekranı kilitle"
+  khayal_menu_add 13 "saglik"                "Mac sağlık"
+  khayal_menu_add 14 "sistir"                "ağır süreçler"
+  khayal_menu_add 15 "toparla"               "temizlik planı"
+  khayal_menu_add 16 "uyku"                  "uyku rutini"
+  khayal_menu_add 17 "pano"                  "pano geçmişi"
+  khayal_menu_add 18 "yapistir 1"            "son panoyu yapıştır"
+  khayal_menu_add 19 "ayar wifi"             "Wi-Fi paneli"
+  khayal_menu_add 20 "spotlight"             "Spotlight Khayal"
+  khayal_menu_add 21 "yeni"                  "proje şablonları"
+  khayal_menu_add 22 "onizle"                "localhost:8787"
+  khayal_menu_add 23 "paketler"              "npm / composer"
+  khayal_menu_add 24 "testet"                "proje testleri"
+  khayal_menu_add 25 "bak"                   "yazılan kodu göster"
+  khayal_menu_add 26 "diff"                  "git diff"
+  khayal_menu_add 27 "git durum"             "repo durumu"
+  khayal_menu_add 28 "git baglan"            "GitHub repo"
+  khayal_menu_add 29 "yayin"                 "Netlify durum"
+  khayal_menu_add 30 "kod"                   "çalışma klasörü"
+  khayal_menu_add 31 "php"                   "yeniphpfile aç"
+  khayal_menu_add 32 "docker ps"             "konteynerler"
+  khayal_menu_add 33 "doctor"                "ajan sağlığı"
+  khayal_menu_add 34 "demo"                  "wow turu"
+  khayal_menu_add 35 "guncelle"              "GitHub'dan güncelle"
+  khayal_menu_add 36 "paketle"               "başka Mac zip"
+  khayal_menu_add 37 "e2e"                   "ajan testleri"
+  khayal_menu_add 38 "versiyon"              "sürüm"
+  khayal_menu_add 39 "github"                "repo'yu aç"
+  khayal_menu_add 40 "help"                  "tam liste"
+  KHAYAL_MENU_READY=1
+}
+
 khayal_menu() {
+  khayal_menu_init
   print -- ""
-  print -- "  ${KH_CY}${KH_B}komut paleti${KH_RST}"
+  print -- "  ${KH_CY}${KH_B}komut paleti${KH_RST}  ${KH_DIM}kısayol kodları${KH_RST}"
   khayal_hr
-  print -- "  ${KH_YL}1${KH_RST}  durum          ${KH_DIM}pil · disk · ağ${KH_RST}"
-  print -- "  ${KH_YL}2${KH_RST}  günaydın       ${KH_DIM}takvim + hava${KH_RST}"
-  print -- "  ${KH_YL}3${KH_RST}  doctor         ${KH_DIM}ajan sağlığı${KH_RST}"
-  print -- "  ${KH_YL}4${KH_RST}  yan yana       ${KH_DIM}Chrome + Cursor${KH_RST}"
-  print -- "  ${KH_YL}5${KH_RST}  düzenle        ${KH_DIM}Downloads${KH_RST}"
-  print -- "  ${KH_YL}6${KH_RST}  pano           ${KH_DIM}yapıştırma geçmişi${KH_RST}"
-  print -- "  ${KH_YL}7${KH_RST}  git durum      ${KH_DIM}repo${KH_RST}"
-  print -- "  ${KH_YL}8${KH_RST}  yayın          ${KH_DIM}Netlify${KH_RST}"
-  print -- "  ${KH_YL}9${KH_RST}  demo           ${KH_DIM}wow turu${KH_RST}"
-  print -- "  ${KH_YL}0${KH_RST}  help           ${KH_DIM}tam liste${KH_RST}"
+  print -- "  ${KH_MG}Mac${KH_RST}"
+  local id cmdp
+  for id in {1..20}; do
+    cmdp="khayal ${KHAYAL_MENU_CMD[$id]}"
+    print -- "  ${KH_YL}${(l:2:: :)id}${KH_RST}  ${KH_CY}${(r:22:: :)cmdp}${KH_RST} ${KH_DIM}${KHAYAL_MENU_DESC[$id]}${KH_RST}"
+  done
   print -- ""
-  khayal_dim "yaz: 3   veya   khayal doctor"
+  print -- "  ${KH_MG}Kod${KH_RST}"
+  for id in {21..32}; do
+    cmdp="khayal ${KHAYAL_MENU_CMD[$id]}"
+    print -- "  ${KH_YL}${(l:2:: :)id}${KH_RST}  ${KH_CY}${(r:22:: :)cmdp}${KH_RST} ${KH_DIM}${KHAYAL_MENU_DESC[$id]}${KH_RST}"
+  done
   print -- ""
+  print -- "  ${KH_MG}Ajan${KH_RST}"
+  for id in {33..40}; do
+    cmdp="khayal ${KHAYAL_MENU_CMD[$id]}"
+    print -- "  ${KH_YL}${(l:2:: :)id}${KH_RST}  ${KH_CY}${(r:22:: :)cmdp}${KH_RST} ${KH_DIM}${KHAYAL_MENU_DESC[$id]}${KH_RST}"
+  done
+  print -- ""
+  khayal_dim "REPL'de numara yaz:  33  →  doctor"
+  print -- ""
+}
+
+khayal_menu_lookup() {
+  khayal_menu_init
+  print -r -- "${KHAYAL_MENU_CMD[$1]:-}"
 }
 
 khayal_usage() {
@@ -126,8 +208,15 @@ khayal_usage() {
   khayal_key "khayal gunaydin" "takvim + hava + pil"
   print -- ""
   print -- "  ${KH_MG}Kod${KH_RST}"
+  khayal_key "khayal yeni php ad" "php html node vite next"
+  khayal_key "khayal clone <url>" "GitHub'dan indir"
+  khayal_key "khayal paketler" "npm / composer install"
+  khayal_key "khayal testet" "proje testleri"
+  khayal_key "khayal onizle" "localhost:8787"
+  khayal_key "khayal bak" "az önce yazılan kod"
+  khayal_key "khayal bak index.html" "dosyayı terminalde göster"
   khayal_key "khayal kod <proje>" "klasör seç, dosya yaz"
-  khayal_key "khayal git kaydet" "init · baglan · gonder"
+  khayal_key "khayal git baglan" "GitHub repo"
   khayal_key "khayal yayin yap evet" "Netlify canlı"
   print -- ""
   print -- "  ${KH_MG}Ajan${KH_RST}"
