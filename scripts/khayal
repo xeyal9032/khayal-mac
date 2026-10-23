@@ -1,0 +1,441 @@
+#!/bin/zsh
+set -euo pipefail
+
+ROOT="${KHAYAL_ROOT:-$HOME/.cursor/skills/khayal-mac}"
+SCRIPTS="$ROOT/scripts"
+SKILL="$ROOT/SKILL.md"
+HOME_DIR="$HOME"
+source "$SCRIPTS/ui.sh"
+
+normalize() {
+  print -r -- "${1:-}" \
+    | tr '[:upper:]' '[:lower:]' \
+    | sed -e 's/ı/i/g' -e 's/İ/i/g' -e 's/ğ/g/g' -e 's/ü/u/g' -e 's/ş/s/g' -e 's/ö/o/g' -e 's/ç/c/g' \
+    | sed -e "s/['’]//g" -e 's/[^a-z0-9 ]/ /g' -e 's/  */ /g' -e 's/^ //' -e 's/ $//'
+}
+
+wordcount() {
+  print -r -- "${1:-}" | wc -w | tr -d ' '
+}
+
+resolve_project() {
+  local key
+  key="$(normalize "${1:-}")"
+  case "$key" in
+    yeniphpfile|php|yeni) print -- "$HOME_DIR/yeniphpfile" ;;
+    ai|asistent|assistant|lifeos|life) print -- "$HOME_DIR/Ai Asistent" ;;
+    chatbot|builder) print -- "$HOME_DIR/AI Chatbot Builder" ;;
+    chat) print -- "$HOME_DIR/Chat" ;;
+    mobilchat|mobil) print -- "$HOME_DIR/mobilchat" ;;
+    programchat|program) print -- "$HOME_DIR/programchat" ;;
+    web1|web) print -- "$HOME_DIR/web1" ;;
+    xeyal|xeyal1) print -- "$HOME_DIR/xeyal1" ;;
+    my1|my) print -- "$HOME_DIR/My1" ;;
+    teze|tezeis) print -- "$HOME_DIR/teze is" ;;
+    home|ev|"") print -- "$HOME_DIR" ;;
+    desktop|masaustu) print -- "$HOME_DIR/Desktop" ;;
+    downloads|indirilenler) print -- "$HOME_DIR/Downloads" ;;
+    documents|belgeler) print -- "$HOME_DIR/Documents" ;;
+    *)
+      if [[ -d "$HOME_DIR/$1" ]]; then
+        print -- "$HOME_DIR/$1"
+      else
+        print -- "proje bulunamadı: ${1:-?}" >&2
+        return 1
+      fi
+      ;;
+  esac
+}
+
+find_agent() {
+  if command -v agent >/dev/null 2>&1; then
+    command -v agent
+    return 0
+  fi
+  if [[ -x "$HOME_DIR/.local/bin/agent" ]]; then
+    print -- "$HOME_DIR/.local/bin/agent"
+    return 0
+  fi
+  return 1
+}
+
+usage() {
+  khayal_usage
+}
+
+open_app() {
+  "$SCRIPTS/open-app.sh" "$1"
+}
+
+run_fast() {
+  local n="$1"
+  local raw="${2:-$1}"
+  case "$n" in
+    help|yardim|-h|--help|neler|"neler yapabilirsin"|"neler yapabilirim"|"ne yapabilirsin"|"neler yapa biliyorsun"|yetenekler)
+      usage; return 0 ;;
+    durum|status|pil|battery|disk)
+      "$SCRIPTS/status.sh"; return 0 ;;
+    gunaydin|merhaba|selam|briefing|sabah)
+      "$SCRIPTS/gunaydin.sh"; return 0 ;;
+    yarin|"yarin ozeti")
+      "$SCRIPTS/yarin.sh"; return 0 ;;
+    *dakikaya*|"*dakika sonra*"|*dakika*|"*saat sonra*"|hatirlat*|remind*)
+      "$SCRIPTS/hatirlat.sh" "$raw"; return 0 ;;
+    taslak*)
+      local rest="${raw#taslak }"
+      "$SCRIPTS/draft.sh" "${(z)rest}"
+      return 0
+      ;;
+    pano|clipboard)
+      "$SCRIPTS/pano.sh" list; return 0 ;;
+    yapistir*)
+      "$SCRIPTS/pano.sh" yapistir "${n##* }"; return 0 ;;
+    toparla)
+      "$SCRIPTS/toparla.sh"; return 0 ;;
+    "toparla evet")
+      "$SCRIPTS/toparla.sh" evet; return 0 ;;
+    saglik|health)
+      "$SCRIPTS/saglik.sh"; return 0 ;;
+    sistir|"kim sistiriyor"|cpu|bellek)
+      "$SCRIPTS/sistir.sh"; return 0 ;;
+    php|lifeos|life|yeniphpfile|web1|xeyal|xeyal1)
+      "$SCRIPTS/proje.sh" "$n"; return 0 ;;
+    "docker ps"|konteyner|containers)
+      "$SCRIPTS/docker-netlify.sh" ps; return 0 ;;
+    yayin|netlify)
+      "$SCRIPTS/docker-netlify.sh" yayin; return 0 ;;
+    "yayin yap"|"yayin yap evet")
+      "$SCRIPTS/docker-netlify.sh" yap "${HOME}/yeniphpfile" ${n##*yap }; return 0 ;;
+    "ss pdf"|"ekran pdf")
+      "$SCRIPTS/ss.sh" pdf; return 0 ;;
+    "ss acikla"|"ekran acikla")
+      local shot
+      shot="$("$SCRIPTS/ss.sh" acikla)"
+      run_agent "Explain this screenshot image file (read it): $shot" 0
+      return 0
+      ;;
+    uyku|"uyku rutini")
+      "$SCRIPTS/uyku.sh"; return 0 ;;
+    uyu|"mac uyu")
+      "$SCRIPTS/uyku.sh" uyu; return 0 ;;
+    "ses dinle"|voice|dinle)
+      if [[ -x "$HOME/.khayal/bin/khayal-hotkey" ]]; then
+        "$HOME/.khayal/bin/khayal-hotkey" --voice &
+        khayal_ok "25 sn dinliyorum: Finder, Chrome, günaydın, yan yana, durum"
+      else
+        khayal_dim "ses yardımcısı yok — khayal pro kur"
+      fi
+      return 0
+      ;;
+    kur|install|"mac kur"|"baska mac"|"baska maca kur")
+      "$SCRIPTS/install.sh" kur; return 0 ;;
+    paketle|paket|zip|"ajan paketle")
+      "$SCRIPTS/install.sh" paketle; return 0 ;;
+    pro|"pro kur"|daemons)
+      "$SCRIPTS/install-daemons.sh"; return 0 ;;
+    model|hizli|"model hizli")
+      "$SCRIPTS/model.sh" hizli; return 0 ;;
+    guc|"model guc"|"model güçlü")
+      "$SCRIPTS/model.sh" guc; return 0 ;;
+    kod)
+      khayal_ok "proje: $("$SCRIPTS/workdir.sh" get)"
+      khayal_dim "örnek: khayal kod yeniphpfile"
+      return 0
+      ;;
+    kod*)
+      local pname="${n#kod }"
+      local pdir
+      pdir="$(resolve_project "$pname")"
+      "$SCRIPTS/workdir.sh" set "$pdir" >/dev/null
+      khayal_ok "kod klasörü: $pdir"
+      return 0
+      ;;
+    git|git*)
+      local grest="${raw#git }"
+      if [[ "$n" == "git" ]]; then
+        "$SCRIPTS/git.sh" durum
+      else
+        "$SCRIPTS/git.sh" "${(z)grest}"
+      fi
+      return 0
+      ;;
+    dns)
+      khayal_dim "DNS flush sudo ister: sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder"
+      return 0
+      ;;
+    finder|finderi|"finder ac"|"finderi ac"|"ac finder"|"open finder")
+      open -a Finder "$HOME_DIR"; khayal_ok "Finder açıldı"; return 0 ;;
+    chrome|"chrome ac"|"google chrome"|"google chrome ac")
+      open_app "Google Chrome"; return 0 ;;
+    safari|"safari ac")
+      open_app "Safari"; return 0 ;;
+    telegram|"telegram ac")
+      open_app "Telegram"; return 0 ;;
+    whatsapp|"whatsapp ac")
+      open_app "WhatsApp"; return 0 ;;
+    docker|"docker ac"|"docker baslat")
+      open_app "Docker"; return 0 ;;
+    xcode|"xcode ac")
+      open_app "Xcode"; return 0 ;;
+    chatgpt|"chatgpt ac"|"chat gpt")
+      open_app "ChatGPT"; return 0 ;;
+    "cursor ac")
+      open_app "Cursor"; return 0 ;;
+    downloads|"downloads ac"|indirilenler|"indirilenler ac")
+      open "$HOME_DIR/Downloads"; print -- "Downloads"; return 0 ;;
+    masaustu|"masaustu ac"|desktop|"desktop ac")
+      open "$HOME_DIR/Desktop"; print -- "Masaüstü"; return 0 ;;
+    belgeler|"belgeler ac"|documents|"documents ac")
+      open "$HOME_DIR/Documents"; print -- "Belgeler"; return 0 ;;
+    ev|"ev ac"|home|"home ac")
+      open "$HOME_DIR"; print -- "Ev klasörü"; return 0 ;;
+    karanlik|"karanlik mod"|"karanlik moda gec"|dark|"dark mode")
+      "$SCRIPTS/appearance.sh" dark; return 0 ;;
+    aydinlik|"aydinlik mod"|"aydinlik moda gec"|light|"light mode")
+      "$SCRIPTS/appearance.sh" light; return 0 ;;
+    "ekran goruntusu"|screenshot|ss)
+      local shot
+      shot="$("$SCRIPTS/screenshot.sh")"
+      print -- "Ekran görüntüsü: $shot"
+      return 0
+      ;;
+    "ses kapat"|mute|sessiz)
+      osascript -e 'set volume with output muted'
+      print -- "ses kapatıldı"; return 0 ;;
+    "ses ac"|unmute)
+      osascript -e 'set volume without output muted'
+      print -- "ses açıldı"; return 0 ;;
+    kilitle|lock|"ekrani kilitle")
+      "$SCRIPTS/lock.sh"; return 0 ;;
+    cop|"cop kutusu"|trash)
+      open -a Finder
+      osascript -e 'tell application "Finder" to open trash'
+      print -- "Çöp kutusu"; return 0 ;;
+    "bildirim testi"|"notify test")
+      "$SCRIPTS/notify.sh" "Khayal" "Hazırım"; print -- "bildirim gönderildi"; return 0 ;;
+    ayarlar|"sistem ayarlari"|settings)
+      "$SCRIPTS/ayar.sh"; return 0 ;;
+    wifi|"wifi ac"|"wifi kapat"|"wifi durum"|"wifi on"|"wifi off")
+      "$SCRIPTS/ayar.sh" "$n"; return 0 ;;
+    bluetooth)
+      "$SCRIPTS/ayar.sh" bluetooth; return 0 ;;
+    "dock gizle"|"dock goster")
+      "$SCRIPTS/ayar.sh" "$n"; return 0 ;;
+    "gizli ac"|"gizli kapat"|"gizli dosyalar")
+      "$SCRIPTS/ayar.sh" "$n"; return 0 ;;
+    guncelleme|spotlight|airdrop|klavye|trackpad|bildirimler|gizlilik|depolama|timemachine|paylasim|odak|"touch id")
+      "$SCRIPTS/ayar.sh" "$n"; return 0 ;;
+    "yan yana"|layout|split|"chrome solda"|"pencere duzeni")
+      "$SCRIPTS/layout.sh"; return 0 ;;
+    duzenle|"downloads duzenle"|organize)
+      "$SCRIPTS/organize-downloads.sh"; return 0 ;;
+    "downloads otomatik ac"|"otomatik ac")
+      "$SCRIPTS/downloads-watch.sh" ac; return 0 ;;
+    "downloads otomatik kapat"|"otomatik kapat")
+      "$SCRIPTS/downloads-watch.sh" kapat; return 0 ;;
+    spotlight|"spotlight kur"|"kisayol")
+      "$SCRIPTS/install-spotlight.sh"; return 0 ;;
+    ayar*)
+      "$SCRIPTS/ayar.sh" "${n#ayar }"
+      return 0
+      ;;
+  esac
+  return 1
+}
+
+khayal_model() {
+  if [[ -s "$HOME/.khayal/model" ]]; then
+    cat "$HOME/.khayal/model"
+  else
+    print -- 'composer-2.5[fast=true]'
+  fi
+}
+
+run_agent() {
+  local prompt="$1"
+  local interactive="${2:-0}"
+  local agent_bin=""
+  if ! agent_bin="$(find_agent)"; then
+    print -- "Cursor CLI (agent) yok. Kurmak için:" >&2
+    print -- "  curl https://cursor.com/install -fsS | bash" >&2
+    print -- "  agent login" >&2
+    return 1
+  fi
+
+  local wd model
+  wd="$("$SCRIPTS/workdir.sh" get)"
+  model="$(khayal_model)"
+  cd "$wd"
+  print -- "${KH_DIM}klasör: $wd  ·  $model${KH_RST}"
+
+  local identity
+  identity="Khayal Mac. WD=$wd. Match user language. Act now: write files, run commands. No plan, no recap, no extra questions if the ask is clear. Never git config / force-push / send chat apps. Git: $SCRIPTS/git.sh  Live: $SCRIPTS/docker-netlify.sh yap evet"
+
+  if [[ "$interactive" == "1" ]]; then
+    khayal_title
+    khayal_banner "$("$SCRIPTS/status.sh" --line 2>/dev/null || true)"
+    exec "$agent_bin" --force --yolo --trust --sandbox disabled --approve-mcps \
+      --workspace "$wd" --model "$model" \
+      "$identity Short ready. Wait."
+  fi
+
+  local wrapped="$identity
+Do: $prompt"
+
+  print -- "${KH_DIM}…${KH_RST}"
+  local -a args
+  args=(-p --force --yolo --trust --sandbox disabled --approve-mcps --output-format text --workspace "$wd" --model "$model")
+  if [[ -n "${KHAYAL_CONTINUE:-}" ]]; then
+    args+=(--continue)
+  fi
+  "$agent_bin" "${args[@]}" "$wrapped"
+  if [[ -z "${KHAYAL_SILENT_NOTIFY:-}" ]]; then
+    "$SCRIPTS/notify.sh" "Khayal" "Bitti" >/dev/null 2>&1 || true
+  fi
+}
+
+run_repl() {
+  KHAYAL_CONTINUE=
+  khayal_title
+  clear 2>/dev/null || true
+  local line n facts
+  facts="$("$SCRIPTS/status.sh" --line 2>/dev/null || true)"
+  khayal_banner "$facts"
+  while true; do
+    print -n "  ${KH_MG}${KH_B}khayal${KH_RST} ${KH_CY}›${KH_RST} "
+    if ! read -r line; then
+      print -- ""
+      khayal_dim "görüşürüz"
+      break
+    fi
+    line="${line#"${line%%[![:space:]]*}"}"
+    line="${line%"${line##*[![:space:]]}"}"
+    [[ -z "$line" ]] && continue
+    n="$(normalize "$line")"
+    case "$n" in
+      cikis|exit|quit|q|bye)
+        khayal_ok "görüşürüz"
+        break
+        ;;
+      clear|temizle|cls)
+        clear
+        facts="$("$SCRIPTS/status.sh" --line 2>/dev/null || true)"
+        khayal_banner "$facts"
+        khayal_dim "klasör: $("$SCRIPTS/workdir.sh" get)"
+        continue
+        ;;
+      kod*)
+        if run_fast "$n" "$line"; then
+          continue
+        fi
+        ;;
+    esac
+    if run_fast "$n" "$line"; then
+      continue
+    fi
+    KHAYAL_SILENT_NOTIFY=1 run_agent "$line" 0
+    KHAYAL_CONTINUE=1
+  done
+}
+
+# --- subcommands that must run even with set -e ---
+cmd="${1:-}"
+
+if [[ "$cmd" == "resolve-project" ]]; then
+  resolve_project "${2:-}"
+  exit $?
+fi
+
+if [[ "$cmd" == "login" ]]; then
+  if agent_bin="$(find_agent)"; then
+    exec "$agent_bin" login
+  else
+    print -- "Önce Cursor CLI kur: curl https://cursor.com/install -fsS | bash" >&2
+    exit 1
+  fi
+fi
+
+if [[ "$cmd" == "ayar" || "$cmd" == "ayarlari" || "$cmd" == "settings" ]]; then
+  shift
+  "$SCRIPTS/ayar.sh" "$@"
+  exit $?
+fi
+
+if [[ "$cmd" == "--tui" || "$cmd" == "tui" ]]; then
+  run_agent "Kullanıcı interaktif sohbet istedi. Kısa hazır olduğunu söyle ve komut bekle." 1
+  exit 0
+fi
+
+if [[ "$cmd" == "proje" || "$cmd" == "open-project" || "$cmd" == "cursor-open" || "$cmd" == "php" || "$cmd" == "lifeos" ]]; then
+  "$SCRIPTS/proje.sh" "${2:-$cmd}"
+  exit $?
+fi
+
+if [[ "$cmd" == "test" || "$cmd" == "e2e" ]]; then
+  exec zsh "$ROOT/tests/e2e.zsh"
+fi
+
+if [[ "$cmd" == "kur" || "$cmd" == "install" ]]; then
+  exec zsh "$SCRIPTS/install.sh" kur "${2:-}"
+fi
+
+if [[ "$cmd" == "paketle" || "$cmd" == "paket" ]]; then
+  exec zsh "$SCRIPTS/install.sh" paketle
+fi
+
+if [[ "$cmd" == "model" ]]; then
+  "$SCRIPTS/model.sh" "${2:-get}" "${3:-}"
+  exit $?
+fi
+
+if [[ "$cmd" == "git" ]]; then
+  shift
+  "$SCRIPTS/git.sh" "${@:-durum}"
+  exit $?
+fi
+
+if [[ "$cmd" == "kod" ]]; then
+  if [[ -n "${2:-}" ]]; then
+    "$SCRIPTS/workdir.sh" set "$(resolve_project "$2")" >/dev/null
+  fi
+  khayal_ok "kod: $("$SCRIPTS/workdir.sh" get)"
+  run_repl
+  exit 0
+fi
+
+if [[ "$cmd" == "toparla" || "$cmd" == "pano" || "$cmd" == "yayin" || "$cmd" == "taslak" || "$cmd" == "hatirlat" ]]; then
+  case "$cmd" in
+    toparla) "$SCRIPTS/toparla.sh" "${2:-}" ;;
+    pano) "$SCRIPTS/pano.sh" "${2:-list}" "${3:-}" ;;
+    yayin) "$SCRIPTS/docker-netlify.sh" "${2:-yayin}" "${3:-}" "${4:-}" ;;
+    taslak) shift; "$SCRIPTS/draft.sh" "$@" ;;
+    hatirlat) shift; "$SCRIPTS/hatirlat.sh" "$@" ;;
+  esac
+  exit $?
+fi
+
+if [[ "$cmd" == "-h" || "$cmd" == "--help" || "$cmd" == "help" || "$cmd" == "yardim" ]]; then
+  usage
+  exit 0
+fi
+
+force_agent=0
+if [[ "$cmd" == "-a" || "$cmd" == "--agent" ]]; then
+  force_agent=1
+  shift
+fi
+
+if [[ $# -eq 0 ]]; then
+  run_repl
+  exit 0
+fi
+
+prompt="$*"
+norm="$(normalize "$prompt")"
+wc="$(wordcount "$norm")"
+
+if [[ "$force_agent" -eq 0 && "$wc" -le 12 ]] && run_fast "$norm" "$prompt"; then
+  exit 0
+fi
+
+run_agent "$prompt" 0

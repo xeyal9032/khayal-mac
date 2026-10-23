@@ -1,0 +1,21 @@
+Başka Mac'e Khayal ajanı
+
+Git (önerilen):
+  git clone https://github.com/xeyal9032/khayal-mac.git ~/.cursor/skills/khayal-mac
+  zsh ~/.cursor/skills/khayal-mac/scripts/install.sh
+
+Bu Mac'te zip:
+  khayal paketle
+  → Masaüstü/Khayal-Mac-Ajan.zip
+  veya: https://github.com/xeyal9032/khayal-mac/releases/latest
+
+Yeni Mac'te zip:
+  unzip ~/Downloads/Khayal-Mac-Ajan.zip -d /tmp
+  zsh /tmp/khayal-mac/scripts/install.sh
+  (yeni Terminal) khayal help
+
+Sonra:
+  curl https://cursor.com/install -fsS | bash
+  agent login
+  Sistem Ayarları → Gizlilik ve Güvenlik → Erişilebilirlik / Otomasyon
+  Gerekirse: sudo xcodebuild -license accept

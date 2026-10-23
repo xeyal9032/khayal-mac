@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="420" viewBox="0 0 1280 420" role="img" aria-label="Khayal Mac">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#070b14"/>
+      <stop offset="55%" stop-color="#0c1222"/>
+      <stop offset="100%" stop-color="#15101f"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#67e8f9"/>
+      <stop offset="100%" stop-color="#e879f9"/>
+    </linearGradient>
+    <radialGradient id="glow1" cx="18%" cy="20%" r="45%">
+      <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="88%" cy="80%" r="50%">
+      <stop offset="0%" stop-color="#d946ef" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#d946ef" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1280" height="420" rx="28" fill="url(#bg)"/>
+  <rect width="1280" height="420" rx="28" fill="url(#glow1)"/>
+  <rect width="1280" height="420" rx="28" fill="url(#glow2)"/>
+  <rect x="1.5" y="1.5" width="1277" height="417" rx="26.5" fill="none" stroke="url(#accent)" stroke-opacity="0.35"/>
+  <text x="80" y="148" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="22" letter-spacing="6" fill="#67e8f9">KHAYAL MAC</text>
+  <text x="80" y="222" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="58" font-weight="700" fill="#f8fafc">Ki_isel Mac operatörü</text>
+  <text x="80" y="278" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="22" fill="#94a3b8">Terminalden Finder, ayarlar, git, kod ve Netlify. Tek komut: khayal</text>
+  <rect x="80" y="322" width="168" height="38" rx="19" fill="none" stroke="#67e8f9"/>
+  <text x="164" y="347" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, SF Mono, monospace" font-size="14" fill="#67e8f9">macOS · zsh · Cursor</text>
+  <rect x="264" y="322" width="148" height="38" rx="19" fill="none" stroke="#e879f9"/>
+  <text x="338" y="347" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, SF Mono, monospace" font-size="14" fill="#e879f9">TR · RU · EN</text>
+</svg>
